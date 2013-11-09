@@ -1,0 +1,21 @@
+[user]
+    name = polyfusia
+    email = sgrsan@strangeworld.ne.jp
+[core]
+    editor = vim
+    pager = less -r
+    excludefile = ~/.gitignore
+[color]
+    diff = auto
+    status = auto
+    branch = auto
+    grep = auto
+    interactive = auto
+    blame = auto
+[alias]
+    co = checkout
+    ci = commit
+    st = status
+    br = branch --verbose
+    ls = log --oneline --stat --graph
+    gr = grep -n

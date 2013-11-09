@@ -1,0 +1,5 @@
+*.pyc
+*.swp
+*.swo
+config.yaml
+config_local.yaml
