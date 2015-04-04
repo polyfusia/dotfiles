@@ -19,7 +19,7 @@ filetype off
 if has('vim_starting')
     set runtimepath+=~/.vim/bundle/neobundle.vim
 endif
-call neobundle#rc(expand('~/.vim/bundle/'))
+call neobundle#begin(expand('~/.vim/bundle/'))
 
 " NeoBundle自体をNeoBundleで管理する
 NeoBundleFetch 'Shougo/neobundle.vim'
@@ -48,6 +48,8 @@ NeoBundle 'tpope/vim-surround'
 NeoBundle 'vim-scripts/Align'
 NeoBundle 'vim-scripts/YankRing.vim'
 NeoBundle 'itchyny/lightline.vim'
+
+call neobundle#end()
 
 " プラグインごとのファイル認識をオン
 " 本設定はNeoBundleの設定の後に記述する必要がある
