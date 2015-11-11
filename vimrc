@@ -87,18 +87,98 @@ let g:vimfiler_safe_mode_by_default = 0
 
 """ {{{
 "
-" vim-flake8
+"  syntastic
 "
 """ {{{
 
-"*.py保存時に自動チェック
-autocmd BufWrite *.py :call Flake8()
-""F6押下でチェック
-autocmd FileType python map <buffer> <F6> :call Flake8()<CR>
-"チェックしたくないエラーを設定
-"let g:flake8_ignore="E501,E128,E124,E221"
+" syntasticレコメンセッティング
+" https://github.com/scrooloose/syntastic#3-recommended-settings
 
-"" }}}
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+" rubyはrubocopでチェック
+" http://qiita.com/yuku_t/items/0ac33cea18e10f14e185
+
+let g:syntastic_ruby_checkers = ['rubocop']
+
+" pythonはflake8でチェック
+" http://dackdive.hateblo.jp/entry/2015/01/07/225059
+let g:syntastic_python_checkers = ['flake8']
+
+""" {{{
+"
+"  lightline
+"  https://github.com/itchyny/lightline.vim
+"
+""" }}}
+
+let g:lightline = {
+      \ 'mode_map': { 'c': 'NORMAL' },
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'filename' ] ]
+      \ },
+      \ 'component_function': {
+      \   'modified': 'LightLineModified',
+      \   'readonly': 'LightLineReadonly',
+      \   'fugitive': 'LightLineFugitive',
+      \   'filename': 'LightLineFilename',
+      \   'fileformat': 'LightLineFileformat',
+      \   'filetype': 'LightLineFiletype',
+      \   'fileencoding': 'LightLineFileencoding',
+      \   'mode': 'LightLineMode',
+      \ },
+      \ }
+
+function! LightLineModified()
+  return &ft =~ 'help\|vimfiler\|gundo' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+endfunction
+
+function! LightLineReadonly()
+  return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? '⭤' : ''
+endfunction
+
+function! LightLineFilename()
+  return ('' != LightLineReadonly() ? LightLineReadonly() . ' ' : '') .
+        \ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
+        \  &ft == 'unite' ? unite#get_status_string() :
+        \  &ft == 'vimshell' ? vimshell#get_status_string() :
+        \ '' != expand('%:t') ? expand('%:t') : '[No Name]') .
+        \ ('' != LightLineModified() ? ' ' . LightLineModified() : '')
+endfunction
+
+function! LightLineFugitive()
+  if &ft !~? 'vimfiler\|gundo' && exists("*fugitive#head")
+    let _ = fugitive#head()
+    return strlen(_) ? '⭠ '._ : ''
+  endif
+  return ''
+endfunction
+
+function! LightLineFileformat()
+  return winwidth(0) > 70 ? &fileformat : ''
+endfunction
+
+function! LightLineFiletype()
+  return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype : 'no ft') : ''
+endfunction
+
+function! LightLineFileencoding()
+  return winwidth(0) > 70 ? (strlen(&fenc) ? &fenc : &enc) : ''
+endfunction
+
+function! LightLineMode()
+  return winwidth(0) > 60 ? lightline#mode() : ''
+endfunction
+
+
+""" }}}
 "
 "  全般設定
 "
@@ -188,6 +268,17 @@ nmap T [toggle]
 nnoremap <silent> [toggle]l :setl list!<CR>: setl list?<CR>
 " wrap
 nnoremap <silent> [toggle]w :setl wrap!<CR>: setl wrap?<CR>
+
+" ### 開く拡張子によってインデント数を変更する ###
+augroup fileTypeIndent
+    autocmd!
+    autocmd BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4
+    autocmd BufNewFile,BufRead *.rb setlocal tabstop=2 softtabstop=2 shiftwidth=2
+    autocmd BufNewFile,BufRead *.php setlocal tabstop=2 softtabstop=2 shiftwidth=2
+    autocmd BufNewFile,BufRead *.js setlocal tabstop=2 softtabstop=2 shiftwidth=2
+    autocmd BufNewFile,BufRead *.html setlocal tabstop=2 softtabstop=2 shiftwidth=2
+augroup END
+
 
 " ### ステータス行の設定 ###
 " ステータス行を、0:表示しない/1:ウィンドウ2つ以上で表示/2:常に表示
