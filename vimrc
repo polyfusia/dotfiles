@@ -87,23 +87,9 @@ let g:vimfiler_safe_mode_by_default = 0
 
 """ {{{
 "
-" vim-flake8
-"
-""" {{{
-
-"*.py保存時に自動チェック
-autocmd BufWrite *.py :call Flake8()
-""F6押下でチェック
-autocmd FileType python map <buffer> <F6> :call Flake8()<CR>
-"チェックしたくないエラーを設定
-"let g:flake8_ignore="E501,E128,E124,E221"
-"
-
-"" {{{
-"
 "" syntastic
 "
-"""" {{{
+""" {{{
 
 " syntasticレコメンセッティング
 " https://github.com/scrooloose/syntastic#3-recommended-settings
@@ -122,7 +108,11 @@ let g:syntastic_check_on_wq = 0
 
 let g:syntastic_ruby_checkers = ['rubocop']
 
-"" }}}
+" pythonはflake8でチェック
+" http://dackdive.hateblo.jp/entry/2015/01/07/225059
+let g:syntastic_python_checkers = ['flake8']
+
+""" }}}
 "
 "  全般設定
 "
