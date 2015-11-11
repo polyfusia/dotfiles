@@ -97,6 +97,30 @@ autocmd BufWrite *.py :call Flake8()
 autocmd FileType python map <buffer> <F6> :call Flake8()<CR>
 "チェックしたくないエラーを設定
 "let g:flake8_ignore="E501,E128,E124,E221"
+"
+
+"" {{{
+"
+"" syntastic
+"
+"""" {{{
+
+" syntasticレコメンセッティング
+" https://github.com/scrooloose/syntastic#3-recommended-settings
+
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+" rubyはrubocopでチェック
+" http://qiita.com/yuku_t/items/0ac33cea18e10f14e185
+
+let g:syntastic_ruby_checkers = ['rubocop']
 
 "" }}}
 "
