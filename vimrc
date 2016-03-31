@@ -1,8 +1,7 @@
 """ {{{
 "
-"  .vimrc version 2013/11/10
-"  ubuntuで使っている設定をいくつかインポート
-" 
+"  .vimrc
+"
 """ }}}
 
 " vi互換を無効
@@ -38,7 +37,6 @@ NeoBundle 'Shougo/vimproc', {
 " プラグイン管理
 NeoBundle 'Shougo/unite.vim'
 NeoBundle 'Shougo/vimfiler.vim'
-" NeoBundle 'Shougo/neocomplete'
 NeoBundle 'Shougo/neocomplcache'
 NeoBundle 'nvie/vim-flake8'
 NeoBundle 'scrooloose/syntastic'
@@ -48,6 +46,9 @@ NeoBundle 'tpope/vim-surround'
 NeoBundle 'vim-scripts/Align'
 NeoBundle 'vim-scripts/YankRing.vim'
 NeoBundle 'itchyny/lightline.vim'
+NeoBundle 'szw/vim-tags'
+NeoBundle 'wesleyche/SrcExpl'
+NeoBundle 'majutsushi/tagbar'
 
 call neobundle#end()
 
@@ -78,25 +79,155 @@ nnoremap <silent> [unite]m :<C-u>Unite<Space>file_mru<CR>
 "  VimFiler
 "
 """ }}}
+
 " VimFilerを起動するキーマップをセット
 nnoremap <silent> [unite]a :<C-u>VimFiler<CR>
 
 " セーフモードをデフォルトでオフにする
 let g:vimfiler_safe_mode_by_default = 0
+
 "" }}}
+"
+"  lightline.vim
+"  README.md の設定例をそのまま利用
+"  https://github.com/itchyny/lightline.vim
+"  ブランチ名の表示にはvim-fugitiveが必要
+"
+""" }}}
+
+let g:lightline = {
+  \ 'active': {
+  \   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'filename' ] ]
+  \ },
+  \ 'component_function': {
+  \   'modified': 'LightLineModified',
+  \   'readonly': 'LightLineReadonly',
+  \   'fugitive': 'LightLineFugitive',
+  \   'filename': 'LightLineFilename',
+  \   'fileformat': 'LightLineFileformat',
+  \   'filetype': 'LightLineFiletype',
+  \   'fileencoding': 'LightLineFileencoding',
+  \   'mode': 'LightLineMode',
+  \ }
+\ }
+
+function! LightLineModified()
+  return &ft =~ 'help\|vimfiler' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+endfunction
+
+function! LightLineReadonly()
+  return &ft !~? 'help\|vimfiler' && &readonly ? '⭤' : ''
+endfunction
+
+function! LightLineFilename()
+  return ('' != LightLineReadonly() ? LightLineReadonly() . ' ' : '') .
+        \ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
+        \  &ft == 'unite' ? unite#get_status_string() :
+        \  &ft == 'vimshell' ? vimshell#get_status_string() :
+        \ '' != expand('%:t') ? expand('%:t') : '[No Name]') .
+        \ ('' != LightLineModified() ? ' ' . LightLineModified() : '')
+endfunction
+
+function! LightLineFugitive()
+  if &ft !~? 'vimfiler' && exists("*fugitive#head")
+    let _ = fugitive#head()
+    return strlen(_) ? '⭠ '._ : ''
+  endif
+  return ''
+endfunction
+
+function! LightLineFileformat()
+  return winwidth(0) > 70 ? &fileformat : ''
+endfunction
+
+function! LightLineFiletype()
+  return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype : 'no ft') : ''
+endfunction
+
+function! LightLineFileencoding()
+  return winwidth(0) > 70 ? (strlen(&fenc) ? &fenc : &enc) : ''
+endfunction
+
+function! LightLineMode()
+  return winwidth(0) > 60 ? lightline#mode() : ''
+endfunction
+
 
 """ {{{
 "
-" vim-flake8
+"  syntastic
 "
 """ {{{
 
-"*.py保存時に自動チェック
-autocmd BufWrite *.py :call Flake8()
-""F6押下でチェック
-autocmd FileType python map <buffer> <F6> :call Flake8()<CR>
-"チェックしたくないエラーを設定
-"let g:flake8_ignore="E501,E128,E124,E221"
+" syntasticレコメンセッティング
+" https://github.com/scrooloose/syntastic#3-recommended-settings
+
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+" ファイル読み込み時にチェックは実行するが、locationlistは自動で開かない設定とする
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 2
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+" locationlistを開くには :Errors を叩く
+" aliasとして Ctrl-e をセットする
+nnoremap <silent> <C-e> :Errors<CR>
+
+" rubyはrubocopでチェック
+" http://qiita.com/yuku_t/items/0ac33cea18e10f14e185
+
+let g:syntastic_ruby_checkers = ['rubocop']
+
+" pythonはflake8でチェック
+" http://dackdive.hateblo.jp/entry/2015/01/07/225059
+let g:syntastic_python_checkers = ['flake8']
+
+" phpはPHP_CodeSnifferでチェック
+" http://shinespark.hatenablog.com/entry/2015/10/05/012713
+let g:syntastic_php_checkers = ['phpcs']
+let g:syntastic_php_phpcs_args='--standard=psr2'
+
+""" {{{
+"
+" ctags関連
+" 前提として、$HOME/tags に言語ごとのtagsファイルが生成されていること
+"
+""" }}}
+
+" phpのtags
+au BufNewFile,BufRead *.php set tags+=$HOME/tags/php.tags
+" pythonのtags
+au BufNewFile,BufRead *.py set tags+=$HOME/tags/python.tags
+" rubyのtags
+au BufNewFile,BufRead *.rb set tags+=$HOME/tags/ruby.tags
+
+" tagsジャンプの時に複数ある時は一覧表示
+nnoremap <C-]> g<C-]>
+
+"" vim-tags 関連
+
+" 言語ごとにtagsの更新ファイルを切り替える
+au BufNewFile,BufRead *.php let g:vim_tags_project_tags_command = "ctags --languages=php -f ~/tags/php.tags `pwd` 2>/dev/null &"
+au BufNewFile,BufRead *.py let g:vim_tags_project_tags_command = "ctags --languages=python -f ~/tags/python.tags `pwd` 2>/dev/null &"
+au BufNewFile,BufRead *.rb let g:vim_tags_project_tags_command = "ctags --languages=ruby -f ~/tags/ruby.tags `pwd` 2>/dev/null &"
+
+"" SrcExpl関連
+
+" F8 でタグジャンプ先のソースを表示するウィンドウを開く
+nmap <F8> :SrcExplToggle<CR>
+" SrcExplでctagsコマンドを叩かせない
+let g:SrcExpl_isUpdateTags = 0
+" ウィンドウサイズの高さを設定
+let g:SrcExpl_winHeight = 24
+
+"" tagbar関連
+
+" F7でtagbarのウィンドウを開く
+nmap <F7> :TagbarToggle<CR>
 
 "" }}}
 "
@@ -201,4 +332,11 @@ augroup cch
     autocmd WinLeave * set nocursorcolumn
     autocmd WinEnter,BufRead * set cursorline
     autocmd WinEnter,BufRead * set cursorcolumn
+augroup END
+
+" 行末の空白文字をハイライトする
+augroup HighlightTrailingSpaces
+  autocmd!
+  autocmd VimEnter,WinEnter,ColorScheme * highlight TrailingSpaces term=underline guibg=Red ctermbg=Red
+  autocmd VimEnter,WinEnter * match TrailingSpaces /\s\+$/
 augroup END

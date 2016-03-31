@@ -1,8 +1,9 @@
 """ {{{
 "
-" .gvimrc version 2013/11/10
-" MacVim用の設定を少々
-" 
+" .gvimrc
+"
+" フォントなどgvim用の設定を投入
+"
 """ }}}
 
 if has('gui_macvim')
@@ -15,5 +16,6 @@ if has('gui_macvim')
 
     " フォント設定
     set antialias
-    set guifontwide=Ricty\ Discord:h12
+    set guifontwide=Ricty\ Discord:h14
     set guifont=Ricty\ Discord:h14
+end
