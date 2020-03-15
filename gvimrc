@@ -16,6 +16,6 @@ if has('gui_macvim')
 
     " フォント設定
     set antialias
-    set guifontwide=Ricty\ Discord:h14
-    set guifont=Ricty\ Discord:h14
+    set guifontwide=Ricty\ Diminished:h14
+    set guifont=Ricty\ Diminished:h14
 end
